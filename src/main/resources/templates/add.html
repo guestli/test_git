@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh_cn" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/main.css">
+	<link rel="stylesheet" href="/static/css/doc.min.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	</style>
+  </head>
+
+  <body>
+  <div th:replace="topnavbar::topnavbar"/>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div th:replace="sidebar::sidebar"/>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+				<ol class="breadcrumb">
+				  <li><a href="#">首页</a></li>
+				  <li><a href="#">数据列表</a></li>
+				  <li class="active">新增</li>
+				</ol>
+			<div class="panel panel-default">
+              <div class="panel-heading">广告<div style="float:right;cursor:pointer;" data-toggle="modal" data-target="#myModal"><i class="glyphicon glyphicon-question-sign"></i></div></div>
+			  <div class="panel-body">
+				<form role="form" id="addForm" th:action="@{/addAdvertisement}" method="post" enctype="multipart/form-data">
+				  <div class="form-group">
+					<label >图片名称</label>
+					<input type="text" class="form-control" name="name" >
+				  </div>
+				  <div class="form-group">
+					<label >图片URL</label>
+					<input type="text" class="form-control" name="url" >
+				  </div>
+				  <div class="form-group">
+					<label for="exampleInputEmail1">选择图片</label>
+					<input name="file" type="file" class="form-control" id="exampleInputEmail1" >
+				  </div>
+				  <button id="add" type="button" class="btn btn-success"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+				  <button type="button" class="btn btn-danger"><i class="glyphicon glyphicon-refresh"></i> 重置</button>
+				</form>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+		<div class="modal-content">
+		  <div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+			<h4 class="modal-title" id="myModalLabel">帮助</h4>
+		  </div>
+		  <div class="modal-body">
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题1</h4>
+				<p>测试内容1，测试内容1，测试内容1，测试内容1，测试内容1，测试内容1</p>
+			  </div>
+			<div class="bs-callout bs-callout-info">
+				<h4>测试标题2</h4>
+				<p>测试内容2，测试内容2，测试内容2，测试内容2，测试内容2，测试内容2</p>
+			  </div>
+		  </div>
+		  <!--
+		  <div class="modal-footer">
+			<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+			<button type="button" class="btn btn-primary">Save changes</button>
+		  </div>
+		  -->
+		</div>
+	  </div>
+	</div>
+    <script src="/static/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/static/script/docs.min.js"></script>
+  	<script src="/static/jquery-form/jquery-form.min.js"></script>
+  	<script src="/static/layer/layer.js"></script>
+        <script type="text/javascript">
+            var options = {
+                //target: '#output',          //把服务器返回的内容放入id为output的元素中
+                beforeSubmit: showRequest,  //提交前的回调函数
+                success: showResponse,      //提交后的回调函数
+                //url: url,                 //默认是form的action， 如果申明，则会覆盖
+                //type: type,               //默认是form的method（get or post），如果申明，则会覆盖
+                //dataType: JSON,           //html(默认), xml, script, json...接受服务端返回的类型
+                clearForm: true,          //成功提交后，清除所有表单元素的值
+                //resetForm: true,          //成功提交后，重置所有表单元素的值
+                timeout: 3000               //限制请求的时间，当请求大于3秒后，跳出请求
+            }
+            var loadingIndex = 0;
+            function showRequest(formData, jqForm, options){
+                loadingIndex = layer.msg('处理中', {icon: 16});
+            };
+            function showResponse(responseText, statusText){
+                layer.close(loadingIndex);
+                alert(responseText.code);
+            };
+            $("#add").click(function () {
+				$("#addForm").ajaxSubmit(options);
+            })
+            $(function () {
+			    $(".list-group-item").click(function(){
+				    if ( $(this).find("ul") ) {
+						$(this).toggleClass("tree-closed");
+						if ( $(this).hasClass("tree-closed") ) {
+							$("ul", this).hide("fast");
+						} else {
+							$("ul", this).show("fast");
+						}
+					}
+				});
+            });
+        </script>
+  </body>
+</html>

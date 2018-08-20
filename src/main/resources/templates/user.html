@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ch-en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/static/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/main.css">
+      <link rel="stylesheet" href="/static/pagination/pagination.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	table tbody tr:nth-child(odd){background:#F4F4F4;}
+	table tbody td:nth-child(even){color:#C00;}
+	</style>
+  </head>
+
+  <body>
+    <div th:replace="topnavbar::topnavbar"/>
+    <div class="container-fluid">
+      <div class="row">
+        <div th:replace="sidebar::sidebar"/>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+				<h3 class="panel-title"><i class="glyphicon glyphicon-th"></i> 数据列表</h3>
+			  </div>
+			  <div class="panel-body">
+<form class="form-inline" role="form" style="float:left;">
+  <div class="form-group has-feedback">
+    <div class="input-group">
+      <div class="input-group-addon">查询条件</div>
+      <input id="queryText" class="form-control has-success" type="text" placeholder="请输入查询条件">
+    </div>
+  </div>
+  <button type="button" class="btn btn-warning" onclick="toPageByQueryText()"><i class="glyphicon glyphicon-search"></i> 查询</button>
+</form>
+<button type="button" class="btn btn-danger" style="float:right;margin-left:10px;"><i class=" glyphicon glyphicon-remove"></i> 删除</button>
+<button type="button" class="btn btn-primary" style="float:right;" onclick="window.location.href='add.html'"><i class="glyphicon glyphicon-plus"></i> 新增</button>
+<br>
+ <hr style="clear:both;">
+          <div class="table-responsive">
+            <table class="table  table-bordered">
+              <thead>
+                <tr >
+                  <th width="30">#</th>
+				  <th width="30"><input type="checkbox"></th>
+                  <th>账号</th>
+                  <th>名称</th>
+                  <th>邮箱地址</th>
+                  <th width="100">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!--<tr>-->
+                  <!--<td>2</td>-->
+				  <!--<td><input type="checkbox"></td>-->
+                  <!--<td>amet</td>-->
+                  <!--<td>consectetur</td>-->
+                  <!--<td>adipiscing</td>-->
+                  <!--<td>-->
+				      <!--<button type="button" class="btn btn-success btn-xs"><i class=" glyphicon glyphicon-check"></i></button>-->
+				      <!--<button type="button" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>-->
+					  <!--<button type="button" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>-->
+				  <!--</td>-->
+                <!--</tr>-->
+              </tbody>
+			  <tfoot>
+			     <tr >
+				     <td colspan="6" align="center">
+						<div class="pagination" id="pagination">
+                            <!--<li class="disabled"><a href="#">上一页</a></li>-->
+                            <!--<li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>-->
+                            <!--<li><a href="#">2</a></li>-->
+                            <!--<li><a href="#">3</a></li>-->
+                            <!--<li><a href="#">4</a></li>-->
+                            <!--<li><a href="#">5</a></li>-->
+                            <!--<li><a href="#">下一页</a></li>-->
+                        </div>
+					 </td>
+				 </tr>
+			  </tfoot>
+            </table>
+          </div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/static/script/docs.min.js"></script>
+    <script src="/static/pagination/jquery.pagination.js"></script>
+    <script th:src="@{/static/layer/layer.js}"></script>
+        <script type="text/javascript">
+
+            function toPageByQueryText(){
+                var queryText = $("#queryText").val();
+                toPage(1,15,queryText);
+            }
+            $(function () {
+
+                var queryText = $("#queryText").val();
+			    $(".list-group-item").click(function(){
+				    if ( $(this).find("ul") ) {
+						$(this).toggleClass("tree-closed");
+						if ( $(this).hasClass("tree-closed") ) {
+							$("ul", this).hide("fast");
+						} else {
+							$("ul", this).show("fast");
+						}
+					}
+				});
+                toPage(1,15,queryText);
+            });
+            $("tbody .btn-success").click(function(){
+                window.location.href = "assignRole.html";
+            });
+            $("tbody .btn-primary").click(function(){
+                window.location.href = "edit.html";
+            });
+
+            function pageselectCallback(page_index, jq){
+                var queryText = $("#queryText").val();
+                //var new_content = $("#page div.result:eq("+page_index+")").clone();
+                // $("#Searchresult").empty().append(new_content); //装载对应分页的内容
+                toPage(page_index+1,15,queryText);
+                return false;
+            }
+
+
+
+            function toPage(pageNo,pageSize,queryText) {
+                var loadingIndex = 1;
+                $.ajax({
+                    url:"/user/userPage",
+                    data:{
+                        "pageNo":pageNo,
+                        "pageSize":pageSize,
+                        "queryText":queryText
+                    },
+                    type:"GET",
+                    beforeSend:function(){
+                        loadingIndex = layer.msg('处理中', {icon: 16});
+                        return true;
+                    },
+                    success:function (data) {
+                        layer.close(loadingIndex);
+                        var datas = data.datas;
+                        var contentUser = "";
+                        var contentPage = "";
+                        var initPagination = function() {
+                            var num_entries = data.pageNum;
+                            // 创建分页
+                            $("#pagination").pagination(num_entries, {
+                                num_edge_entries: 1, //边缘页数
+                                num_display_entries: 4, //主体页数
+                                callback: pageselectCallback,
+                                current_page:pageNo-1,
+                                items_per_page:1 ,//每页显示1项
+                                prev_text:"上一页",
+                                next_text:"下一页"
+                            });
+                        }();
+                        // if(data.pageNo == 1){
+                        //     contentPage += '<li class="disabled"><a href="javascript:void(0)">上一页</a></li>';
+                        // }else{
+                        //     contentPage += '<li ><a href="#" onclick="toPage('+(data.pageNo-1)+','+data.pageSize+','+queryText+')">上一页</a></li>';
+                        // }
+                        // for(var i = 1;i<=data.pageNum;i++){
+                        //     if(i == data.pageNo){
+                        //         contentPage += '<li class="active"><a href="#" onclick="toPage('+i+','+data.pageSize+','+queryText+')">'+i+'</a></li>';
+                        //     }else {
+                        //         contentPage += '<li ><a href="#" onclick="toPage('+i+','+data.pageSize+','+queryText+')">'+i+'</a></li>';
+                        //     }
+                        // }
+                        // if(data.pageNo == data.pageNum){
+                        //     contentPage += '<li class="disabled"><a href="#">下一页</a></li>';
+                        // }else{
+                        //     contentPage += '<li ><a onclick="toPage('+(data.pageNo+1)+','+data.pageSize+','+queryText+')">下一页</a></li>';
+                        // }
+                        $.each(datas,function (i,n) {
+                            contentUser += '<tr>';
+                            contentUser += '<td>'+(i+1)+'</td>';
+                            contentUser += '<td><input type="checkbox"></td>';
+                            contentUser += '    <td>'+n.loginacct+'</td>';
+                            contentUser += '    <td>'+n.username+'</td>';
+                            contentUser += '    <td>'+n.email+'</td>';
+                            contentUser += '    <td>';
+                            contentUser += '    <button type="button" onclick="assignRole('+n.id+')"  class="btn btn-success btn-xs"><i  class=" glyphicon glyphicon-check"></i></button>';
+                            contentUser += '<button type="button" class="btn btn-primary btn-xs"><i class=" glyphicon glyphicon-pencil"></i></button>';
+                            contentUser += '<button type="button" class="btn btn-danger btn-xs"><i class=" glyphicon glyphicon-remove"></i></button>';
+                            contentUser += '</td>';
+                            contentUser += '</tr>';
+                        })
+                        $("tbody").html(contentUser);
+                        $("#page").html(contentPage);
+                    }
+                })
+            }
+            function assignRole(id) {
+                location.href="/assignRole/"+id;
+            }
+
+        </script>
+  </body>
+</html>

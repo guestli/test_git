@@ -1,0 +1,22 @@
+spring:
+  thymeleaf:
+    cache: false
+  activiti:
+    database-schema-update: true
+    job-executor-activate: true
+
+  datasource:
+    jdbc-url: jdbc:mysql://localhost:3306/atcrowdfunding?useUnicode=true&characterEncoding=UTF8
+    driverClass: com.mysql.jdbc.Driver
+    user: root
+    password: 123
+    type: com.mchange.v2.c3p0.ComboPooledDataSource
+#  mvc:
+#    static-path-pattern: classpath:/static/**
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+logging:
+  level:
+    com:
+      crowdfunding:
+        mapper: debug

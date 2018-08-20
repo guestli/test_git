@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh_en" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+	<link rel="stylesheet" href="/static/bootstrap/css/bootstrap.min.css">
+      <link rel="stylesheet" href="/static/css/font-awesome.min.css">
+	<link rel="stylesheet" href="/static/css/main.css">
+      <link rel="stylesheet" href="/static/pagination/pagination.css">
+	<style>
+	.tree li {
+        list-style-type: none;
+		cursor:pointer;
+	}
+	table tbody tr:nth-child(odd){background:#F4F4F4;}
+	table tbody td:nth-child(even){color:#C00;}
+	</style>
+  </head>
+
+  <body>
+
+
+  <div th:replace="topnavbar::topnavbar"/>
+  <div class="container-fluid">
+	  <div class="row">
+		  <div th:replace="sidebar::sidebar"/>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+			<div class="panel panel-default">
+			  <div class="panel-heading">
+				<h3 class="panel-title"><i class="glyphicon glyphicon-th"></i> 数据列表</h3>
+			  </div>
+			  <div class="panel-body">
+<form class="form-inline" role="form" style="float:left;">
+  <div class="form-group has-feedback">
+    <div class="input-group">
+      <div class="input-group-addon">查询条件</div>
+      <input class="form-control has-success" type="text" placeholder="请输入查询条件">
+    </div>
+  </div>
+  <button type="button" class="btn btn-warning"><i class="glyphicon glyphicon-search"></i> 查询</button>
+</form>
+
+<button id="upload" type="button" class="btn btn-primary" style="float:right;"><i class="glyphicon glyphicon-upload"></i> 上传流程定义文件</button>
+<br>
+ <hr style="clear:both;">
+          <form id="fform" method="post" enctype="multipart/form-data" style="display: none">
+              <input type="file" name="file" id="file">
+          </form>
+          <div class="table-responsive">
+            <table class="table  table-bordered">
+              <thead>
+                <tr >
+                  <th width="30">#</th>
+                  <th>流程名称</th>
+                  <th>流程版本</th>
+                  <th>任务名称</th>
+                  <th width="100">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+			  <tfoot>
+			     <tr >
+				     <td colspan="6" align="center">
+						<div id="pagination" class="pagination">
+
+                        </div>
+					 </td>
+				 </tr>
+
+			  </tfoot>
+            </table>
+          </div>
+			  </div>
+			</div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/jquery/jquery-2.1.1.min.js"></script>
+    <script src="/static/bootstrap/js/bootstrap.min.js"></script>
+	<script src="/static/script/docs.min.js"></script>
+    <script src="/static/pagination/jquery.pagination.js"></script>
+    <script th:src="@{/static/jquery-form/jquery-form.min.js}"></script>
+    <script src="/static/layer/layer.js"></script>
+        <script type="text/javascript">
+            var options = {
+                //target: '#output',          //把服务器返回的内容放入id为output的元素中
+                beforeSubmit: showRequest,  //提交前的回调函数
+                success: showResponse,      //提交后的回调函数
+                url: "/process/deploy",                 //默认是form的action， 如果申明，则会覆盖
+                clearForm: true,          //成功提交后，清除所有表单元素的值
+                timeout: 3000               //限制请求的时间，当请求大于3秒后，跳出请求
+            }
+            $("#upload").click(function () {
+                $("#file").click();
+            })
+            $("#file").change(function () {
+                $("#fform").ajaxSubmit(options);
+            });
+            function showRequest(formData, jqForm, options){
+                return true;  //只要不返回false，表单都会提交,在这里可以对表单元素进行验证
+            };
+            function showResponse(responseText, statusText){
+                toPage(1,10,null);
+                layer.msg(responseText.msg, {time:1000, icon:6, shift:6});
+            };
+            $(function () {
+			    $(".list-group-item").click(function(){
+				    if ( $(this).find("ul") ) {
+						$(this).toggleClass("tree-closed");
+						if ( $(this).hasClass("tree-closed") ) {
+							$("ul", this).hide("fast");
+						} else {
+							$("ul", this).show("fast");
+						}
+					}
+				});
+			    toPage(1,10,null);
+            });
+            function pageselectCallback(page_index, jq){
+                var queryText = $("#queryText").val();
+                //var new_content = $("#page div.result:eq("+page_index+")").clone();
+                // $("#Searchresult").empty().append(new_content); //装载对应分页的内容
+                toPage(page_index+1,10,queryText);
+                return false;
+            }
+            function toPage(pageNo,pageSize,queryText) {
+                var loadingIndex = 1;
+                $.ajax({
+                    url:"/process/doProcess",
+                    data:{
+                        "pageNo":pageNo,
+                        "pageSize":pageSize,
+                        "queryText":queryText
+                    },
+                    type:"GET",
+                    beforeSend:function(){
+                        loadingIndex = layer.msg('处理中', {icon: 16});
+                        return true;
+                    },
+                    success:function (data) {
+                        layer.close(loadingIndex);
+                        var datas = data.datas;
+                        var contentProcess = "";
+                        var initPagination = function() {
+                            var num_entries = data.pageNum;
+                            // 创建分页
+                            $("#pagination").pagination(num_entries, {
+                                num_edge_entries: 1, //边缘页数
+                                num_display_entries: 4, //主体页数
+                                callback: pageselectCallback,
+                                current_page:pageNo-1,
+                                items_per_page:1 ,//每页显示1项
+                                prev_text:"上一页",
+                                next_text:"下一页"
+                            });
+                        }();
+                        $.each(datas,function (i,n) {
+                            contentProcess += '<tr>';
+                            contentProcess += '<td>'+n.id+'</td>';
+                            contentProcess += '<td>'+(n.name==null?"":n.name)+'</td>';
+                            contentProcess += '<td>'+n.version+'</td>';
+                            contentProcess += '<td>'+n.key+'</td>';
+                            contentProcess += '<td>';
+                            contentProcess += '<button type="button" class="btn btn-success btn-xs" onclick="window.location.href = \'/process/showPic?id='+n.id+'\'"><i class=" glyphicon glyphicon-eye-open"></i></button>';
+                            contentProcess += '<button type="button" class="btn btn-danger btn-xs" onclick="deleteProcess(\''+n.id+'\',\''+n.name+'\')"><i class=" glyphicon glyphicon-remove"></i></button>';
+                            contentProcess += '</td>';
+                            contentProcess += '</tr>';
+                        })
+                        $("tbody").html(contentProcess);
+                    }
+                })
+            }
+            function deleteProcess(id,name) {
+                layer.confirm("是否删除"+name,  {icon: 3, title:'提示'}, function(cindex){
+                    alert(id)
+                    $.ajax({
+                        url:"/process/deleteProcess/"+id,
+                        type:"DELETE",
+                        success:function (data) {
+                            toPage(1,10,null);
+                            layer.msg(data.msg, {time:1000, icon:6, shift:6});
+                        }
+                    })
+                    layer.close(cindex);
+                }, function(cindex){
+                    layer.close(cindex);
+                });
+
+
+            }
+        </script>
+  </body>
+</html>
